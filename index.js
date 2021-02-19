@@ -18,10 +18,13 @@ const io = socketio(server, {
 });
 
 io.on("connection", (socket) => {
+  socket.emit('init', () =>{
+
+  })
   socket.on('join', () => {
     console.log("New connection added");
     
-  })
+  });
   socket.on("disconnect", () => {
     console.log("A client disconnected");
   })
