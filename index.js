@@ -34,9 +34,6 @@ const io = socketio(server, {
 });
 
 io.on("connection", (socket) => {
-  // const updateState = (socket, _room) => {
-  //   socket.in(_room).emit('updateState', rooms[_room])
-  // }
   console.log("In join, New connection added");
 
   socket.on('lobby', ({_name, _room}, callback) => {
@@ -57,11 +54,10 @@ io.on("connection", (socket) => {
 
   socket.on('initializeGame', (lobbyCode, username, callback) => {
     let player = getUser(username);
-    console.log("lobbyCode = ", lobbyCode);
-    //let room = rooms[lobbyCode];
-    //console.log("room = ", room)
+    console.log("Lobby code = ", lobbyCode)
     let op_user =  rooms[lobbyCode].users.find(name => name != username);
     let opponent = getUser(op_user);
+    console.log("opponent = ", opponent)
     console.log("initializing the game");
     callback( rooms[lobbyCode], player, opponent)
   })
@@ -143,6 +139,35 @@ io.on("connection", (socket) => {
 
   socket.on('startGame', (room) => {
     io.in(`${room}`).emit('play');
+  })
+
+  //players in a room wish to play again
+  socket.on("playAgain", (room) => {
+    //reset gameState
+    let newGameState = { 
+      p1: NONE,
+      p2: NONE,
+      p1_points: 0,
+      p2_points: 0,
+      gameWinner: -1,
+      roundWinner: -1
+    }
+    rooms[room].gameState = newGameState;
+    //clear users from user array, and delete from users object
+    let usersLength = rooms[room].users.length;
+    for(let i = 0; i < usersLength; i++){
+      let poppedUser = rooms[room].users.pop();
+      Object.values(users).forEach((user) => {
+        if(user.username === poppedUser && user.roomCode === room){
+          delete(users[user]);
+        }
+      })
+    }
+    io.in(`${room}`).emit('playAgainCalled', room)
+  })
+
+  socket.on('removeFromRoom', (room) => {
+    socket.leave(`${room}`)
   })
 
   socket.on("disconnect", (reason) => {
