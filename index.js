@@ -4,6 +4,8 @@ const cors = require('cors');
 const socketio = require('socket.io');
 const { rooms, users, addRoom, getRoom, addUser, removeUser, getUsers, getUser } = require('./handlers/users');
 
+const { ROCK, PAPER, SCISSORS, NONE } = require('./handlers/cardTypes');
+
 const {updateState} = require('./handlers/gameState')
 
 const PORT = process.env.PORT || 5000;
@@ -67,6 +69,76 @@ io.on("connection", (socket) => {
   socket.on('changePoints', (newPtsToWin, _room) => {
     rooms[_room].pointsToWin = newPtsToWin;
     updateState(io, _room);
+  })
+
+  socket.on('selectCard', (room, user, card) => {
+    console.log("in select card, card = ", card);
+    if(users[user].player === 1){
+      rooms[room].gameState.p1 = card;
+    }
+    else{
+      rooms[room].gameState.p2 = card;
+    }
+
+     //execute round
+    if(rooms[room].gameState.p1 != NONE && rooms[room].gameState.p2 != NONE){
+      let state = rooms[room].gameState;
+
+      if(state.p1 === ROCK){
+        if(state.p2 === PAPER){
+          rooms[room].gameState.roundWinner = 2;
+          rooms[room].gameState.p2_points = rooms[room].gameState.p2_points + 1;
+        }
+        else if(state.p2 === SCISSORS){
+          rooms[room].gameState.roundWinner = 1;
+          rooms[room].gameState.p1_points = rooms[room].gameState.p1_points + 1;
+        }
+        else{
+          rooms[room].gameState.roundWinner = -1;
+        }
+      }
+      else if(state.p1 === PAPER){
+        if(state.p2 === SCISSORS){
+          rooms[room].gameState.roundWinner = 2;
+          rooms[room].gameState.p2_points = rooms[room].gameState.p2_points + 1;
+        }
+        else if(state.p2 === ROCK){
+          rooms[room].gameState.roundWinner = 1;
+          rooms[room].gameState.p1_points = rooms[room].gameState.p1_points + 1;
+
+        }
+        else{
+          rooms[room].gameState.roundWinner = -1;
+        }
+      }
+      else if(state.p1 === SCISSORS){
+        if(state.p2 === ROCK){
+          rooms[room].gameState.roundWinner = 2;
+          rooms[room].gameState.p2_points = rooms[room].gameState.p2_points + 1;
+        }
+        else if(state.p2 === PAPER){
+          rooms[room].gameState.roundWinner = 1;
+          rooms[room].gameState.p1_points = rooms[room].gameState.p1_points + 1;
+
+        }
+        else{
+          rooms[room].gameState.roundWinner = -1;
+        }
+      }
+
+      //check if a player has enough points to win
+      let ptw = rooms[room].pointsToWin;
+      if(rooms[room].gameState.p1_points === ptw){
+        rooms[room].gameState.gameWinner = 1;
+      }
+      else if(rooms[room].gameState.p2_points === ptw){
+        rooms[room].gameState.gameWinner = 2;
+      }
+      else{
+        rooms[room].gameState.gameWinner = -1;
+      }
+      updateState(io, room); //emit the new room state to everyone in the room
+    }
   })
 
   socket.on('startGame', (room) => {

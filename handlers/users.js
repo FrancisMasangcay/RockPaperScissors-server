@@ -11,8 +11,8 @@
  *        p2: Rock | paper | scissor,
  *        p1_points: 2,
  *        p2_points: 1,
- *        p1_confirmed: true | false
- *        p2_confirmed: true | false
+ *        gameWinner: -1 | 1 | 2,
+ *        roundWinner: -1 | 1 | 2
  *      }
  *    }
  * }
@@ -26,7 +26,9 @@
  * }
  */
 
-const rooms = {}
+const { NONE } = require('./cardTypes');
+
+const rooms = {};
 const users = {};
 
 const addRoom = () => {
@@ -45,12 +47,12 @@ const addRoom = () => {
     pointsToWin: 3,
     roomCode: newCode,
     gameState: {
-      p1: '',
-      p2: '',
+      p1: NONE,
+      p2: NONE,
       p1_points: 0,
       p2_points: 0,
-      p1_confirmed: false,
-      p2_confirmed: false,
+      gameWinner: -1,
+      roundWinner: -1
     }
   }
   console.log("Rooms: ", rooms);
