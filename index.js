@@ -22,6 +22,10 @@ app.post('/create-lobby', (req, res) => {
   return res.send({ roomCode: code})
 });
 
+app.get('/', (req, res) => {
+  res.send({response: "Server is running"}).status(200);
+})
+
 //pp.post('/join')
 
 //const server = http.createServer(app);
