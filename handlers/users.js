@@ -22,6 +22,7 @@
  *    roomCode: 1234
  *    player: p1
  *    username: JohnDoe
+ *    socketId: socket.io ID data
  *    }
  * }
  */
@@ -63,7 +64,7 @@ const getRoom = (_room) => {
   return rooms[_room];
 }
 
-const addUser = (_name, _room) => {
+const addUser = (_name, _room, id) => {
   if(!_name || !_room) return { error: "These field cannot be empty"}
   _name = _name.trim().toLowerCase();
   _room = _room.trim().toLowerCase();
@@ -78,11 +79,12 @@ const addUser = (_name, _room) => {
     users[_name] = {
       roomCode: _room,
       player: rooms[_room].users.length,
-      username: _name
+      username: _name,
+      socketID: id
     }; 
   }
-  console.log(`Current room state = `, rooms)
-  console.log(`Current user state = `, users)
+  // console.log(`Current room state = `, rooms)
+  // console.log(`Current user state = `, users)
   return { success: `added a user to room ${_room}`};
 }
 

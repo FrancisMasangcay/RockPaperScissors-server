@@ -34,11 +34,12 @@ const io = socketio(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log("In join, New connection added");
+  // console.log("In join, New connection added");
 
   socket.on('lobby', ({_name, _room}, callback) => {
     //populate the lobby with any users already there
-    const {error, success} = addUser(_name, _room); //add the new user to the lobby
+    let id = socket.id;
+    const {error, success} = addUser(_name, _room, id); //add the new user to the lobby
     if(error && !success){
       return callback(error);
     }
@@ -54,11 +55,11 @@ io.on("connection", (socket) => {
 
   socket.on('initializeGame', (lobbyCode, username, callback) => {
     let player = getUser(username);
-    console.log("Lobby code = ", lobbyCode)
+    // console.log("Lobby code = ", lobbyCode)
     let op_user =  rooms[lobbyCode].users.find(name => name != username);
     let opponent = getUser(op_user);
-    console.log("opponent = ", opponent)
-    console.log("initializing the game");
+    // console.log("opponent = ", opponent)
+    // console.log("initializing the game");
     callback( rooms[lobbyCode], player, opponent)
   })
 
@@ -68,7 +69,7 @@ io.on("connection", (socket) => {
   })
 
   socket.on('selectCard', (room, user, card) => {
-    console.log("in select card, card = ", card);
+    // console.log("in select card, card = ", card);
     if(users[user].player === 1){
       rooms[room].gameState.p1 = card;
     }
@@ -159,10 +160,11 @@ io.on("connection", (socket) => {
       let poppedUser = rooms[room].users.pop();
       Object.values(users).forEach((user) => {
         if(user.username === poppedUser && user.roomCode === room){
-          delete(users[user]);
+          delete(users[user.username]);
         }
       })
     }
+    console.log("in play again ", users)
     io.in(`${room}`).emit('playAgainCalled', room)
   })
 
@@ -172,7 +174,18 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", (reason) => {
     console.log(`A client disconnected due to ${reason}`);
-    //console.log(`reconnecting`);
-    //socket.open();
+    let id = socket.id;
+    let name = "";
+    Object.values(users).forEach((user) => {
+      console.log("The user = ", user);
+      console.log("user.socketID === ", user.socketID)
+      if(user.socketID === id){
+        console.log("performing the delete")
+        name = user.username;
+        delete(users[user.username]);
+      }
+    })
+    console.log(`Disconnecting client ${name} on socket ${id}`);
+    console.log("Users = ", users);
   })
 });
