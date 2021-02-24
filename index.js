@@ -22,7 +22,9 @@ app.post('/create-lobby', (req, res) => {
   return res.send({ roomCode: code})
 });
 
-//pp.post('/join')
+app.get('/', (req, res) => {
+  res.send({response: "Server is running"}).status(200);
+})
 
 //const server = http.createServer(app);
 const server = app.listen(PORT, () => console.log(`Server has started on port ${PORT}`));
